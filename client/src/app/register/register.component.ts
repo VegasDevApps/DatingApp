@@ -22,15 +22,7 @@ export class RegisterComponent {
       next: () => {
         this.cancel();
       },
-      error: error => {
-        if(error.error.errors){
-          Object.entries(error.error.errors).forEach((message) => {
-            this.toastr.error(error.error.errors[message[0]]);
-          });
-        } else {
-          this.toastr.error('Something went wrong!');
-        }
-      }
+      error: error => console.log(error )
     })
   }
 
