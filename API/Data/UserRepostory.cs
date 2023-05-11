@@ -19,7 +19,7 @@ namespace API.Data
             _context = context;
         }
 
-        public async Task<AppUser> GetUserIdAsync(int id)
+        public async Task<AppUser> GetUserByIdAsync(int id)
         {
             return await _context.Users.FindAsync(id);
         }
@@ -51,9 +51,6 @@ namespace API.Data
 
         public async Task<PagedList<MemberDto>> GetMembersAsync(UserParams userParams)
         {
-            // var query = _context.Users
-            //     .ProjectTo<MemberDto>(_mapper.ConfigurationProvider)
-            //     .AsNoTracking();
 
             var query = _context.Users.AsQueryable();
 
@@ -64,6 +61,12 @@ namespace API.Data
             var maxDob = DateOnly.FromDateTime(DateTime.Today.AddYears(-userParams.MinAge));
 
             query = query.Where(u => u.DateOfBirth >= minDob && u.DateOfBirth <= maxDob);
+
+            query = userParams.OrderBy switch
+            {
+                "created" => query.OrderByDescending(u => u.Created),
+                _ => query.OrderByDescending(u => u.LastActive)
+            };
 
             return await PagedList<MemberDto>.CreateAsync(
                 query.AsNoTracking().ProjectTo<MemberDto>(_mapper.ConfigurationProvider), 
