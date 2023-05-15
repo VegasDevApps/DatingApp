@@ -47,16 +47,19 @@ export class MembersService {
     return;
   }
 
-  
-
   getMembers(userParams: UserParams): Observable<PaginatedResult<Member[]>>{
-
+    
     const response = this.memberCache.get(Object.values(userParams).join('-'));
-
+    
     if(response) return of(response);
 
-    let params = this.getPaginationHeaders(userParams);
+    let params = this.getPaginationHeaders(userParams.pageNumber, userParams.pageSize);
 
+    params = params.append('minAge', userParams.minAge);
+    params = params.append('maxAge', userParams.maxAge);
+    params = params.append('gender', userParams.gender);
+    params = params.append('orderBy', userParams.orderBy);
+    
     return this.getPaginatedResult<Member[]>(this.baseUrl + 'users', params).pipe(tap(response => {
       this.memberCache.set(Object.values(userParams).join('-'), response);
     }));
@@ -90,6 +93,19 @@ export class MembersService {
     return this.http.delete(this.baseUrl + 'users/delete-photo/' + photoId);
   }
 
+  addLike(username: string){
+    return this.http.post(this.baseUrl + 'likes/' + username, {});
+  }
+
+  getLikes(predicate: string, pageNumber: number, pageSize: number){
+    let params = this.getPaginationHeaders(pageNumber, pageSize);
+    params = params.append('predicate', predicate);
+    //return this.http.get<Member[]>(this.baseUrl + 'likes?predicate=' + predicate);
+    return this.getPaginatedResult<Member[]>(this.baseUrl + 'likes', params);
+  }
+
+  /* Private methods */
+
   private getPaginatedResult<T>(url: string, params: HttpParams) {
     const paginatedResult: PaginatedResult<T> = new PaginatedResult<T>;
     return this.http.get<T>(url, { observe: 'response', params }).pipe(
@@ -106,15 +122,10 @@ export class MembersService {
     );
   }
 
-  private getPaginationHeaders(userParams: UserParams) {
+  private getPaginationHeaders(pageNumber: number, pageSize: number) {
     let params = new HttpParams();
-    params = params.append('pageNumber', userParams.pageNumber);
-    params = params.append('pageSize', userParams.pageSize);
-    params = params.append('minAge', userParams.minAge);
-    params = params.append('maxAge', userParams.maxAge);
-    params = params.append('gender', userParams.gender);
-    params = params.append('orderBy', userParams.orderBy);
-
+    params = params.append('pageNumber', pageNumber);
+    params = params.append('pageSize', pageSize);
     return params;
   }
 }
