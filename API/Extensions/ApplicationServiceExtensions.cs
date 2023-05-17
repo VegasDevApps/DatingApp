@@ -24,6 +24,7 @@ namespace API.Extensions
             services.AddScoped<IPhotoService, PhotoService>();
             services.AddScoped<LogUserActivity>();
             services.AddScoped<ILikesRepository, LikesReporitory>();
+            services.AddScoped<IMessageRepository, MessgeRepository>();
             return services;
         }
     }
